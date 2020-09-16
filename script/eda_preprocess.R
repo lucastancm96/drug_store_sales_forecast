@@ -119,3 +119,24 @@ y <- ggplot(compdist_Cust,
   theme_minimal()
 
 grid.arrange(x, y, top='Competition Distance vs Avg Sales and Customers')
+
+# ******************** Data Imputation ********************
+# ---> Import store
+store <- read.csv('csv/DA1920_store.csv')
+store <- store[, 1:(ncol(store)-2)]
+
+# ---> Impute data
+impvar <- store[, c('CompetitionDistance', 'CompetitionOpenSinceMonth', 'CompetitionOpenSinceYear')]
+impval <- mice(impvar, method='pmm', seed=42)
+compimp <- complete(impval, 5)
+
+# ---> Replace empty data with imputed data
+impcol <- list(colnames(compimp))
+for (col in impcol){
+  store[col] <- compimp[col]
+}
+
+# ---> Visualize imputed values (red=imputed, blue=original)
+densityplot(impval, data = ~ CompetitionDistance + CompetitionOpenSinceMonth + CompetitionOpenSinceYear)
+
+write.csv(store, 'csv/imp_store.csv', row.names=FALSE)
